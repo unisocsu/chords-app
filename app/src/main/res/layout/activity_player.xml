@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/drawerLayoutPlayer"
     android:layout_width="match_parent"
@@ -65,6 +66,41 @@
             android:layout_height="wrap_content"
             android:text="גלילה לפי זיהוי שירה (מיקרופון)"
             android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="קצב גלילה (BPM):"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="16dp">
+
+            <Button
+                android:id="@+id/btnTempoDown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-"/>
+
+            <TextView
+                android:id="@+id/tvTempoValue"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="120"
+                android:textSize="16sp"/>
+
+            <Button
+                android:id="@+id/btnTempoUp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+"/>
+        </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"
