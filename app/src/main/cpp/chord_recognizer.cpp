@@ -7,6 +7,7 @@
 
 extern "C" {
 
+// 1. אתחול מנוע Whisper
 JNIEXPORT jboolean JNICALL
 Java_com_chords_app_NativeAudioEngine_initWhisperEngine(
         JNIEnv *env, jobject thiz, jstring model_path_jstr) {
@@ -16,6 +17,7 @@ Java_com_chords_app_NativeAudioEngine_initWhisperEngine(
     return FileLyricsAnalyzer::initModel(modelPath) ? JNI_TRUE : JNI_FALSE;
 }
 
+// 2. ניתוח קובץ שמע שלם (אקורדים + מילים ל-JSON)
 JNIEXPORT jstring JNICALL
 Java_com_chords_app_NativeAudioEngine_processAudioFileBuffer(
         JNIEnv *env, jobject thiz, jshortArray pcm_buffer, jint length, jboolean is_final_chunk) {
@@ -39,6 +41,7 @@ Java_com_chords_app_NativeAudioEngine_processAudioFileBuffer(
     return env->NewStringUTF(combinedJson.c_str());
 }
 
+// 3. זיהוי אקורדים בזמן אמת מהמיקרופון
 JNIEXPORT jstring JNICALL
 Java_com_chords_app_NativeAudioEngine_processAudioBuffer(
         JNIEnv *env, jobject thiz, jshortArray audio_data, jint length) {
@@ -53,6 +56,7 @@ Java_com_chords_app_NativeAudioEngine_processAudioBuffer(
     return env->NewStringUTF(realtimeChord.c_str());
 }
 
+// 4. מציאת השנייה הנוכחית בשיר לפי קול המשתמש (גלילה חכמה)
 JNIEXPORT jdouble JNICALL
 Java_com_chords_app_NativeAudioEngine_findCurrentTimestampByVoice(
         JNIEnv *env, jobject thiz, jshortArray mic_buffer, jint length) {
@@ -62,7 +66,7 @@ Java_com_chords_app_NativeAudioEngine_findCurrentTimestampByVoice(
     return 0.0;
 }
 
-// --- חדש: שינוי סולם לאודיו הגולמי (Pitch Shifting) ---
+// 5. שינוי סולם לאודיו הגולמי (Pitch Shifting)
 JNIEXPORT jshortArray JNICALL
 Java_com_chords_app_NativeAudioEngine_transposeAudioPitch(
         JNIEnv *env, jobject thiz, jshortArray pcm_buffer, jint length, jint semitones) {
@@ -72,10 +76,29 @@ Java_com_chords_app_NativeAudioEngine_transposeAudioPitch(
 
     std::vector<short> audioData(buffer, buffer + length);
     
-    // אלגוריתם שינוי תדרים (Pitch Shifting) יושם כאן על audioData בהתאם ל-semitones
+    // אלגוריתם שינוי סולם לאודיו יושם כאן
 
     jshortArray result = env->NewShortArray(length);
     env->SetShortArrayRegion(result, 0, length, audioData.data());
+
+    env->ReleaseShortArrayElements(pcm_buffer, buffer, JNI_ABORT);
+    return result;
+}
+
+// 6. שינוי קצב / מהירות השיר (Tempo / BPM Time-Stretching)
+JNIEXPORT jshortArray JNICALL
+Java_com_chords_app_NativeAudioEngine_changeAudioTempo(
+        JNIEnv *env, jobject thiz, jshortArray pcm_buffer, jint length, jfloat tempo_factor) {
+            
+    jshort *buffer = env->GetShortArrayElements(pcm_buffer, nullptr);
+    if (!buffer) return nullptr;
+
+    std::vector<short> audioData(buffer, buffer + length);
+    
+    // אלגוריתם שינוי מהירות (Time-Stretching) יושם כאן
+
+    jshortArray result = env->NewShortArray(audioData.size());
+    env->SetShortArrayRegion(result, 0, audioData.size(), audioData.data());
 
     env->ReleaseShortArrayElements(pcm_buffer, buffer, JNI_ABORT);
     return result;
