@@ -1,18 +1,16 @@
 #include "FileChordsAnalyzer.h"
-#include <cmath>
-#include <android/log.h>
+#include <sstream>
 
-#define TAG "FileChordsAnalyzer"
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
+std::string FileChordsAnalyzer::processChordChunk(const std::vector<short>& pcmChunk, double currentTimestampSeconds) {
+    if (pcmChunk.empty()) return "[]";
 
-std::string FileChordsAnalyzer::processChordChunk(const std::vector<short>& pcmChunk) {
-    if (pcmChunk.empty()) return "N/A";
+    // בהמשך כאן ירוץ חישוב ה-KissFFT המלא על המקטע
+    std::string detectedChord = "C"; // דוגמה זמנית
 
-    // כאן נבצע את חישוב ה-KissFFT על החלון של האקורדים
-    // 1. המרת ה-short ל-float
-    // 2. הרצת kiss_fft
-    // 3. פענוח וקטור ה-Chroma לקביעת האקורד (לדוגמה C, Am, G וכו')
+    std::ostringstream jsonStream;
+    jsonStream << "[";
+    jsonStream << "{\"chord\":\"" << detectedChord << "\",\"time\":" << currentTimestampSeconds << "}";
+    jsonStream << "]";
 
-    // דוגמה להדמיה בלבד כרגע:
-    return "C"; 
+    return jsonStream.str();
 }
