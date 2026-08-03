@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Chords App</string>
+    <string name="jam_mode">מצב ג'אם חי (מיקרופון)</string>
+    <string name="start_listening">התחל האזנה</string>
+    <string name="stop_listening">עצור האזנה</string>
+    <string name="tempo_speed">מהירות קצב (BPM / Tempo):</string>
+    <string name="slow">איטי (-)</string>
+    <string name="fast">מהיר (+)</string>
+</resources>
