@@ -2,7 +2,24 @@
 #include <sstream>
 #include <android/log.h>
 
-// ... (שאר הקוד הקיים)
+#define TAG "FileLyricsAnalyzer"
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
+
+struct whisper_context* FileLyricsAnalyzer::s_whisper_ctx = nullptr;
+
+bool FileLyricsAnalyzer::initModel(const std::string& modelPath) {
+    if (s_whisper_ctx) {
+        whisper_free(s_whisper_ctx);
+        s_whisper_ctx = nullptr;
+    }
+
+    s_whisper_ctx = whisper_init_from_file(modelPath.c_str());
+    if (!s_whisper_ctx) {
+        LOGE("שגיאה בטעינת מודל Whisper: %s", modelPath.c_str());
+        return false;
+    }
+    return true;
+}
 
 std::string FileLyricsAnalyzer::processFileChunk(const std::vector<float>& floatPcm) {
     if (!s_whisper_ctx) return "[]";
@@ -24,13 +41,14 @@ std::string FileLyricsAnalyzer::processFileChunk(const std::vector<float>& float
     bool first = true;
 
     for (int i = 0; i < n_segments; ++i) {
-        // Whisper מאפשר לחלץ טוקנים/מילים בודדות בתוך הסגמנט
         const char *text = whisper_full_get_segment_text(s_whisper_ctx, i);
-        int64_t t0 = whisper_full_get_segment_t0(s_whisper_ctx, i); // זמן התחלה במאית שנייה (centiseconds)
-        int64_t t1 = whisper_full_get_segment_t1(s_whisper_ctx, i); // זמן סיום
+        int64_t t0 = whisper_full_get_segment_t0(s_whisper_ctx, i);
+        int64_t t1 = whisper_full_get_segment_t1(s_whisper_ctx, i);
 
         double startSec = (double)t0 / 100.0;
         double endSec = (double)t1 / 100.0;
+
+        if (!text) continue;
 
         if (!first) jsonStream << ",";
         jsonStream << "{\"word\":\"" << text << "\",\"start\":" << startSec << ",\"end\":" << endSec << "}";
@@ -39,4 +57,11 @@ std::string FileLyricsAnalyzer::processFileChunk(const std::vector<float>& float
 
     jsonStream << "]";
     return jsonStream.str();
+}
+
+void FileLyricsAnalyzer::release() {
+    if (s_whisper_ctx) {
+        whisper_free(s_whisper_ctx);
+        s_whisper_ctx = nullptr;
+    }
 }
