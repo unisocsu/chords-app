@@ -1,0 +1,32 @@
+name: Fetch C++ Dependencies Temporary
+
+on:
+  workflow_dispatch: # מאפשר הפעלה ידנית בלחיצת כפתור ב-GitHub
+
+permissions:
+  contents: write # הרשאת כתיבה כדי לבצע Commit ו-Push בחזרה למאגר
+
+jobs:
+  fetch-and-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download and Extract KissFFT
+        run: |
+          mkdir -p app/src/main/cpp/third_party
+          cd app/src/main/cpp/third_party
+          curl -L https://github.com/mborgerding/kissfft/archive/refs/heads/master.zip -o kissfft.zip
+          unzip kissfft.zip
+          mv kissfft-master kissfft
+          rm kissfft.zip
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/cpp/third_party/
+          git commit -m "chore: add kissfft native library to third_party" || exit 0
+          git push
