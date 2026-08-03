@@ -9,33 +9,32 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="נגן אקורדים ומילים חכם"
+        android:text="בחירת מקור לשיר"
         android:textSize="24sp"
         android:textStyle="bold"
         android:layout_marginBottom="32dp"/>
 
     <Button
-        android:id="@+id/btnSelectFile"
+        android:id="@+id/btnFileExplorer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="בחר קובץ שמע מהמכשיר לניתוח"
-        android:padding="12dp"
-        android:layout_marginBottom="24dp"/>
+        android:text="📂 בחר קובץ דרך מסייר הקבצים"
+        android:padding="14dp"
+        android:layout_marginBottom="16dp"/>
 
-    <TextView
+    <Button
+        android:id="@+id/btnMediaLibrary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="או בחר שיר מוכן מתיקיית הנתונים:"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+        android:text="🎵 ספריית שירים (אמנים, אלבומים וחיפוש)"
+        android:padding="14dp"
+        android:layout_marginBottom="16dp"/>
 
-    <ListView
-        android:id="@+id/listViewSongs"
+    <Button
+        android:id="@+id/btnWebSearch"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="#F5F5F5"
-        android:padding="8dp"/>
+        android:layout_height="wrap_content"
+        android:text="🌐 חיפוש והורדה מהאינטרנט (WebView)"
+        android:padding="14dp"/>
 
 </LinearLayout>
