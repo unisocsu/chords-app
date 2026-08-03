@@ -27,17 +27,23 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # 4. התקנת Gradle 8.7 באופן מובנה על השרת
+      # 4. התקנת Gradle 8.7
       - name: Setup Gradle 8.7
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.7'
 
-      # 5. בניית קובץ ה-APK (Debug) ישירות עם Gradle 8.7
+      # 5. יצירת/עדכון gradle.properties להפעלת תמיכה ב-AndroidX
+      - name: Enable AndroidX in gradle.properties
+        run: |
+          echo "android.useAndroidX=true" >> gradle.properties
+          echo "android.enableJetifier=true" >> gradle.properties
+
+      # 6. בניית קובץ ה-APK (Debug)
       - name: Build Debug APK with Gradle
         run: gradle assembleDebug
 
-      # 6. העלאת קובץ ה-APK שנוצר כארטיפקט להורדה
+      # 7. העלאת קובץ ה-APK שנוצר כארטיפקט להורדה
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
