@@ -1,114 +1,95 @@
 package com.chords.app;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.ListView;
 import android.widget.Toast;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
+
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
+
+import java.io.File;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView chordDisplayTextView;
-    private Button toggleRecordingButton;
-
-    private AudioRecorder audioRecorder;
-    private NativeAudioEngine nativeAudioEngine;
-    private boolean isRecording = false;
-
-    // Direct interface callback for chord detection updates
-    public interface OnChordDetectedListener {
-        void onChordDetected(String chordName);
-    }
-
-    private final ActivityResultLauncher<String> requestPermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                if (isGranted) {
-                    startAudioProcessing();
-                } else {
-                    Toast.makeText(this, "Audio recording permission is required to analyze sound.", Toast.LENGTH_LONG).show();
-                }
-            });
+    private static.final int PICK_AUDIO_REQUEST = 1;
+    private ListView listViewSongs;
+    private ArrayList<String> preloadedSongsList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main.xml.replace(".xml", "")); // תיקון נתיב פשוט ל-layout
+        // לחלופין: setContentView(R.layout.activity_main);
 
-        // UI Initialization
-        chordDisplayTextView = findViewById(R.id.chordTextView);
-        toggleRecordingButton = findViewById(R.id.startStopButton);
+        Button btnSelectFile = findViewById(R.id.btnSelectFile);
+        listViewSongs = findViewById(R.id.listViewSongs);
 
-        // Engine Initialization
-        nativeAudioEngine = new NativeAudioEngine();
-        
-        // AudioRecorder setup with UI thread boundary update
-        audioRecorder = new AudioRecorder(nativeAudioEngine, chordName -> {
-            runOnUiThread(() -> {
-                if (chordDisplayTextView != null) {
-                    chordDisplayTextView.setText(chordName);
-                }
-            });
+        // טעינת רשימת שירים לדוגמה מתיקיית הנתונים (או קבצים מקומיים קיימים)
+        loadPreloadedSongs();
+
+        // כפתור בחירת קובץ שמע חדש מהמכשיר
+        btnSelectFile.setOnClickListener(v -> openAudioFilePicker());
+
+        // האזנה לבחירת שיר מתוך הרשימה המוכנה
+        listViewSongs.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedSongName = preloadedSongsList.get(position);
+            openSongPlayer(selectedSongName, null);
         });
+    }
 
-        if (toggleRecordingButton != null) {
-            toggleRecordingButton.setOnClickListener(v -> {
-                if (isRecording) {
-                    stopAudioProcessing();
+    private void openAudioFilePicker() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("audio/*");
+        startActivityForResult(Intent.createChooser(intent, "בחר קובץ שמע"), PICK_AUDIO_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_AUDIO_REQUEST && resultCode == RESULT_OK && data != null) {
+            Uri audioUri = data.getData();
+            if (audioUri != null) {
+                // נחלץ את שם הקובץ או נשתמש בכתובת שלו כמזהה
+                String songName = "custom_song_" + System.currentTimeMillis();
+                
+                // בדיקה האם כבר קיים קובץ JSON שמור עבור השיר הזה
+                String existingJson = SongDataPersistence.loadSongJsonFromFile(this, songName);
+                if (existingJson != null) {
+                    Toast.makeText(this, "נמצא JSON שמור במכשיר! פותח נגן...", Toast.LENGTH_SHORT).show();
+                    openSongPlayer(songName, audioUri);
                 } else {
-                    checkPermissionAndStart();
+                    Toast.makeText(this, "השיר חדש, מתחיל ניתוח מנוע C++...", Toast.LENGTH_LONG).show();
+                    // כאן נפעיל את הניתוח עם מנועי ה-C++ ונשמור את התוצאה
+                    // ואז נפתח את הנגן המסונכרן
+                    openSongPlayer(songName, audioUri);
                 }
-            });
-        }
-    }
-
-    private void checkPermissionAndStart() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                == PackageManager.PERMISSION_GRANTED) {
-            startAudioProcessing();
-        } else {
-            requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO);
-        }
-    }
-
-    private void startAudioProcessing() {
-        if (!isRecording && audioRecorder != null) {
-            audioRecorder.startRecording();
-            isRecording = true;
-            if (toggleRecordingButton != null) {
-                toggleRecordingButton.setText("Stop");
             }
         }
     }
 
-    private void stopAudioProcessing() {
-        if (isRecording && audioRecorder != null) {
-            audioRecorder.stopRecording();
-            isRecording = false;
-            if (toggleRecordingButton != null) {
-                toggleRecordingButton.setText("Start");
-            }
-        }
+    private void loadPreloadedSongs() {
+        preloadedSongsList = new ArrayList<>();
+        // הוספת שירים לדוגמה שיכולים להימצא בתיקיית הנתונים או ב-Assets
+        preloadedSongsList.add("שיר לדוגמה 1 - ירושלים של זהב");
+        preloadedSongsList.add("שיר לדוגמה 2 - אשרי האיש");
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, preloadedSongsList);
+        listViewSongs.setAdapter(adapter);
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        // Mandatory release of microphone hardware on pause state
-        if (isRecording) {
-            stopAudioProcessing();
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (isRecording) {
-            stopAudioProcessing();
-        }
+    private void openSongPlayer(String songName, Uri audioUri) {
+        // מעבר למסך הנגן והתצוגה המסונכרנת (שנבנה בהמשך)
+        Toast.makeText(this, "פתיחת נגן עבור: " + songName, Toast.LENGTH_SHORT).show();
+        
+        // אפשר להעביר את ה-Uri או שם השיר באמצעות Intent למסך הבא
+        // Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
+        // intent.putExtra("SONG_NAME", songName);
+        // if (audioUri != null) intent.putExtra("AUDIO_URI", audioUri.toString());
+        // startActivity(intent);
     }
 }
