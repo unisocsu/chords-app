@@ -22,25 +22,22 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
       # 3. הגדרת Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # 4. יצירת ה-Gradle Wrapper עם גרסה 8.7 התואמת לאנדרואיד
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.7
+      # 4. התקנת Gradle 8.7 באופן מובנה על השרת
+      - name: Setup Gradle 8.7
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.7'
 
-      # 5. מתן הרשאות הרצה ל-gradlew
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      # 6. בניית קובץ ה-APK (Debug)
+      # 5. בניית קובץ ה-APK (Debug) ישירות עם Gradle 8.7
       - name: Build Debug APK with Gradle
-        run: ./gradlew assembleDebug
+        run: gradle assembleDebug
 
-      # 7. העלאת קובץ ה-APK שנוצר כארטיפקט להורדה
+      # 6. העלאת קובץ ה-APK שנוצר כארטיפקט להורדה
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
