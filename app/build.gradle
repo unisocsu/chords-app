@@ -4,24 +4,16 @@ plugins {
 
 android {
     namespace 'com.chords.app'
-    compileSdk 34 // גרסת הקומפילציה הראשית
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.chords.app"
-        minSdk 23     // הגדרה לאנדרואיד 6.0 (Marshmallow) כמו שביקשת
+        minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        
-        // הגדרת תמיכה בארכיטקטורות נפוצות למנועי ה-C++ וה-NDK
-        externalNativeBuild {
-            cmake {
-                cppFlags ""
-                abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
-            }
-        }
     }
 
     buildTypes {
@@ -31,26 +23,22 @@ android {
         }
     }
 
-    // קישור לקובץ ה-CMake בשביל מנועי ה-C++
-    externalNativeBuild {
-        cmake {
-            path file('src/main/cpp/CMakeLists.txt')
-            version '3.22.1'
-        }
-    }
-
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
 
 dependencies {
+    // AndroidX & UI Libraries
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
-    
+
+    // Flexbox Layout (פתרון לשגיאות flexDirection, flexWrap, alignItems)
+    implementation 'com.google.android.flexbox:flexbox:3.0.0'
+
+    // Testing
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
