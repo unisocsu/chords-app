@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <android/log.h>
 
+// Include KissFFT header
+#include "kiss_fft.h"
+
 #define LOG_TAG "ChordRecognizerNative"
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
@@ -13,30 +16,33 @@ constexpr int MAX_BUFFER_SIZE = 4096;
 constexpr int NUM_PITCH_CLASSES = 12;
 
 namespace {
-    // Pre-allocated static memory buffers to guarantee 0MB runtime allocation
+    // Static pre-allocated buffers
     float g_time_domain[MAX_BUFFER_SIZE];
-    float g_real_spectrum[MAX_BUFFER_SIZE];
-    float g_imag_spectrum[MAX_BUFFER_SIZE];
+    kiss_fft_cpx g_fft_in[MAX_BUFFER_SIZE];
+    kiss_fft_cpx g_fft_out[MAX_BUFFER_SIZE];
     float g_magnitude[MAX_BUFFER_SIZE / 2];
     float g_chroma[NUM_PITCH_CLASSES];
+
+    // Reusable KissFFT State Configuration
+    kiss_fft_cfg g_fft_cfg = nullptr;
+    int g_last_fft_size = 0;
 
     const char* NOTE_NAMES[NUM_PITCH_CLASSES] = {
         "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
     };
 
-    void compute_dft(const float* in, float* out_real, float* out_imag, int N) {
-        int num_bins = N / 2;
-        for (int k = 0; k < num_bins; k++) {
-            float real_acc = 0.0f;
-            float imag_acc = 0.0f;
-            for (int n = 0; n < N; n++) {
-                float angle = (2.0f * static_cast<float>(M_PI) * k * n) / N;
-                real_acc += in[n] * std::cos(angle);
-                imag_acc -= in[n] * std::sin(angle);
+    void run_kiss_fft(int N) {
+        // Allocate or reuse KissFFT plan only if buffer size changes
+        if (g_fft_cfg == nullptr || g_last_fft_size != N) {
+            if (g_fft_cfg != nullptr) {
+                free(g_fft_cfg);
             }
-            out_real[k] = real_acc;
-            out_imag[k] = imag_acc;
+            g_fft_cfg = kiss_fft_alloc(N, 0, nullptr, nullptr);
+            g_last_fft_size = N;
         }
+
+        // Fast Fourier Transform execution
+        kiss_fft(g_fft_cfg, g_fft_in, g_fft_out);
     }
 
     int frequency_to_pitch_class(float freq) {
@@ -112,29 +118,32 @@ Java_com_chords_app_NativeAudioEngine_processAudioBuffer(
         length = MAX_BUFFER_SIZE;
     }
 
-    // Direct Primitive Access with Critical Lock
     jshort *buffer = static_cast<jshort*>(env->GetPrimitiveArrayCritical(audio_data, nullptr));
     if (buffer == nullptr) {
         return env->NewStringUTF("");
     }
 
-    // Windowing & Normalization
+    // Windowing & KissFFT Complex Array Preparation
     for (int i = 0; i < length; i++) {
         float sample = static_cast<float>(buffer[i]) / 32768.0f;
         float window = 0.5f * (1.0f - std::cos((2.0f * static_cast<float>(M_PI) * i) / (length - 1)));
-        g_time_domain[i] = sample * window;
+        float windowed_sample = sample * window;
+        
+        g_fft_in[i].r = windowed_sample;
+        g_fft_in[i].i = 0.0f;
     }
 
-    // Release Critical Array Lock immediately
     env->ReleasePrimitiveArrayCritical(audio_data, buffer, JNI_ABORT);
 
-    // DSP Spectrum Analysis
-    compute_dft(g_time_domain, g_real_spectrum, g_imag_spectrum, length);
+    // Compute FFT via KissFFT
+    run_kiss_fft(length);
 
+    // Compute Spectral Magnitudes from Complex Output
     int num_bins = length / 2;
     for (int k = 0; k < num_bins; k++) {
-        g_magnitude[k] = std::sqrt(g_real_spectrum[k] * g_real_spectrum[k] + 
-                                   g_imag_spectrum[k] * g_imag_spectrum[k]);
+        float r = g_fft_out[k].r;
+        float i = g_fft_out[k].i;
+        g_magnitude[k] = std::sqrt(r * r + i * i);
     }
 
     extract_chroma(g_magnitude, length, SAMPLE_RATE);
