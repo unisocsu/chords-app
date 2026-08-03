@@ -1,8 +1,4 @@
-package com.chords.app.parser;
-
-import com.chords.app.model.ChordToken;
-import com.chords.app.model.Song;
-import com.chords.app.model.SongLine;
+package com.chords.app;
 
 import org.json.JSONArray;
 import org.json.JSONException;
