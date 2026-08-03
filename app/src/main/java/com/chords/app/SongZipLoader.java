@@ -1,8 +1,6 @@
-package com.chords.app.utils;
+package com.chords.app;
 
 import android.content.Context;
-import com.chords.app.model.Song;
-import com.chords.app.parser.JsonSongParser;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -32,7 +30,6 @@ public class SongZipLoader {
         String jsonContent = readFileToString(jsonFile);
         Song song = JsonSongParser.parseSong(jsonContent);
 
-        // Map relative paths inside JSON to absolute local paths
         if (!song.getAlbumArtPath().isEmpty()) {
             File artFile = new File(outputDir, song.getAlbumArtPath());
             if (artFile.exists()) {
@@ -58,7 +55,6 @@ public class SongZipLoader {
             while ((entry = zis.getNextEntry()) != null) {
                 File file = new File(targetDirectory, entry.getName());
                 
-                // Mitigate Zip Slip Security Vulnerability
                 String canonicalDestinationPath = targetDirectory.getCanonicalPath();
                 String canonicalFilePath = file.getCanonicalPath();
                 if (!canonicalFilePath.startsWith(canonicalDestinationPath)) {
