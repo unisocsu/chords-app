@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. משיכת קוד הפרויקט מ-GitHub
+      # 1. משיכת הקוד מהריפוזיטורי
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -24,19 +24,23 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      # 3. מתן הרשאות הרצה לסקריפט ה-Gradle
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      # 4. התקנת Android SDK ו-NDK הנדרשים לקומפילציית C++
+      # 3. הגדרת Android SDK
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # 5. בניית קובץ ה-APK (Debug) כולל קישוריות ה-C++
+      # 4. יצירת ה-Gradle Wrapper דינמית על השרת
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper
+
+      # 5. מתן הרשאות הרצה ל-gradlew שזה עתה נוצר
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # 6. בניית קובץ ה-APK (Debug) כולל רכיבי ה-C++
       - name: Build Debug APK with Gradle
         run: ./gradlew assembleDebug
 
-      # 6. העלאת קובץ ה-APK שנוצר כארטיפקט להורדה ב-GitHub Actions
+      # 7. העלאת קובץ ה-APK שנוצר כארטיפקט להורדה
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
