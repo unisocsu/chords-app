@@ -1,19 +1,25 @@
 cmake_minimum_required(VERSION 3.22.1)
+
 project("chord_recognizer")
 
-# הגדרת ספרית הנייטיב שלנו מבוססת קובץ ה-C הטהור
+# Set C++ Standard to C++17
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Add native library compiled from C++
 add_library(
         chord_recognizer
         SHARED
-        chord_recognizer.c
+        chord_recognizer.cpp
 )
 
-# חיבור ללוגים של אנדרואיד (Android Log) כדי שנוכל להדפיס פריטים מתוך קוד ה-C ל-Logcat
+# Find Android NDK logging library
 find_library(
         log-lib
         log
 )
 
+# Link log library
 target_link_libraries(
         chord_recognizer
         ${log-lib}
