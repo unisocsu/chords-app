@@ -14,6 +14,7 @@ public class NativeAudioEngine {
 
     public static native double findCurrentTimestampByVoice(short[] micBuffer, int length);
 
-    // פונקציית טרנספוזיציה לקובץ האודיו ב-C++
     public static native short[] transposeAudioPitch(short[] pcmBuffer, int length, int semitones);
+
+    public static native short[] changeAudioTempo(short[] pcmBuffer, int length, float tempoFactor);
 }
