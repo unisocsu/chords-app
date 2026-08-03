@@ -1,32 +1,46 @@
-name: Fetch C++ Dependencies Temporary
+name: Fetch Native Libraries
 
 on:
-  workflow_dispatch: # מאפשר הפעלה ידנית בלחיצת כפתור ב-GitHub
-
-permissions:
-  contents: write # הרשאת כתיבה כדי לבצע Commit ו-Push בחזרה למאגר
+  workflow_dispatch: # מאפשר לך להריץ את זה ידנית מתי שתרצה מטאב ה-Actions בגיטהאబ్
 
 jobs:
-  fetch-and-commit:
+  download-libs:
+    name: Download KissFFT and Whisper.cpp
     runs-on: ubuntu-latest
 
     steps:
+      # 1. משיכת הקוד של הפרויקט שלך
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Download and Extract KissFFT
+      # 2. יצירת התיקיות והורדת הספריות ישירות למקום הנכון
+      - name: Download and Extract Libraries
         run: |
+          echo "Creating third_party directory..."
           mkdir -p app/src/main/cpp/third_party
           cd app/src/main/cpp/third_party
-          curl -L https://github.com/mborgerding/kissfft/archive/refs/heads/master.zip -o kissfft.zip
-          unzip kissfft.zip
-          mv kissfft-master kissfft
+
+          # הורדה וחילוץ של KissFFT
+          echo "Downloading KissFFT..."
+          curl -L https://github.com/mborgerding/kissfft/archive/refs/tags/v131.1.0.zip -o kissfft.zip
+          unzip -q kissfft.zip
+          mv kissfft-131.1.0 kissfft
           rm kissfft.zip
 
-      - name: Commit and Push Changes
+          # הורדה וחילוץ של Whisper.cpp
+          echo "Downloading Whisper.cpp..."
+          curl -L https://github.com/ggerganov/whisper.cpp/archive/refs/heads/master.zip -o whisper.zip
+          unzip -q whisper.zip
+          mv whisper.cpp-master whisper.cpp
+          rm whisper.zip
+
+          echo "Libraries downloaded successfully into third_party!"
+
+      # 3. אופציונלי: שמירת הקבצים חזרה לריפוזיטורי (Commit & Push)
+      - name: Commit and Push Libraries to Repository
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          
           git add app/src/main/cpp/third_party/
-          git commit -m "chore: add kissfft native library to third_party" || exit 0
-          git push
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Add KissFFT and Whisper.cpp libraries automatically" && git push)
