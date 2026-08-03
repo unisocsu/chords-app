@@ -1,16 +1,19 @@
 package com.chords.app;
 
-import java.util.List;
-
 public class SongLine {
-    private final String section;
-    private final List<ChordToken> tokens;
+    private final String lyrics;
+    private final String chords;
 
-    public SongLine(String section, List<ChordToken> tokens) {
-        this.section = section;
-        this.tokens = tokens;
+    public SongLine(String lyrics, String chords) {
+        this.lyrics = lyrics;
+        this.chords = chords;
     }
 
-    public String getSection() { return section; }
-    public List<ChordToken> getTokens() { return tokens; }
+    public String getLyrics() {
+        return lyrics;
+    }
+
+    public String getChords() {
+        return chords;
+    }
 }
