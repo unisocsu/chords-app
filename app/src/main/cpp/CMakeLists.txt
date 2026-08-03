@@ -4,6 +4,7 @@ add_library(
         chord_recognizer.cpp
         FileLyricsAnalyzer.cpp
         FileChordsAnalyzer.cpp
+        RealtimeChordsAnalyzer.cpp
         ${THIRD_PARTY_DIR}/kissfft/kissfft-131.1.0/kiss_fft.c
         ${THIRD_PARTY_DIR}/whisper.cpp/whisper.cpp
         ${THIRD_PARTY_DIR}/whisper.cpp/ggml/src/ggml.c
