@@ -8,10 +8,13 @@ android {
 
     defaultConfig {
         applicationId "com.chords.app"
-        minSdk 24
+        minSdk 19
         targetSdk 34
         versionCode 1
         versionName "1.0"
+
+        // תמיכה ב-Desugaring עבור API 19
+        coreLibraryDesugaringEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -24,18 +27,21 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
 dependencies {
+    // ספריית Desugaring לתמיכה ב-Java 8 ב-API 19
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+
     // AndroidX & UI Libraries
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
-    // Flexbox Layout (פתרון לשגיאות flexDirection, flexWrap, alignItems)
+    // Flexbox Layout
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
 
     // Testing
