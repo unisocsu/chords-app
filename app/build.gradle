@@ -13,9 +13,6 @@ android {
         versionCode 1
         versionName "1.0"
 
-        // תמיכה ב-Desugaring עבור API 19
-        coreLibraryDesugaringEnabled true
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -27,6 +24,9 @@ android {
     }
 
     compileOptions {
+        // הגדרת Desugaring בתוך compileOptions
+        coreLibraryDesugaringEnabled true
+
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
