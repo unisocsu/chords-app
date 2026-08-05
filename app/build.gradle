@@ -13,6 +13,9 @@ android {
         versionCode 1
         versionName "1.0"
 
+        // 1. הפעלת MultiDex (חובה ב-API 19 כשמשתמשים ב-Desugaring)
+        multiDexEnabled true
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -24,7 +27,7 @@ android {
     }
 
     compileOptions {
-        // הגדרת Desugaring בתוך compileOptions
+        // הפעלת Desugaring
         coreLibraryDesugaringEnabled true
 
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -35,6 +38,9 @@ android {
 dependencies {
     // ספריית Desugaring לתמיכה ב-Java 8 ב-API 19
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+
+    // 2. תמיכה ב-MultiDex עבור API 19
+    implementation 'androidx.multidex:multidex:2.0.1'
 
     // AndroidX & UI Libraries
     implementation 'androidx.appcompat:appcompat:1.6.1'
